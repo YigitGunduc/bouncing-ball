@@ -2,38 +2,59 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-#define WIDTH 8
-#define HEIGHT 16
+#define FILL '@'
+#define WIDTH 32
 #define RADIUS 3
+#define BACKG '.'
+#define HEIGHT 64
 
-
-
-void clearScreen()
-{
-    const char *CLEAR_SCREEN_ANSI = "\e[1;1H\e[2J";
-      write(STDOUT_FILENO, CLEAR_SCREEN_ANSI, 12);
-}
-
-char board[WIDTH][HEIGHT];
+static char board[WIDTH][HEIGHT];
 
 typedef struct {
   int x;
   int y;
-} pos;
+} vec2;
 
-pos ball_center = {.x = 2, .y = 2};
-pos ball_speed = {.x = 2, .y = 2};
+static vec2 ball_center = {.x = 16, .y = 16};
+static vec2 ball_speed = {.x = -1, .y = -2};
+
+void clear_canvas(void)
+{ 
+  printf("\033[H\033[J");
+}
+
+void draw_ball(void)
+{
+  for(int row = 0; row < WIDTH; row++)
+  {
+    for(int col = 0; col < HEIGHT; col++)
+    {
+      int x = col - (HEIGHT / 2);
+      int y = (WIDTH / 2) - row;
+      int sum = (x*x) + (y*y);
+
+      if((RADIUS * RADIUS - 4 < sum) && (sum < RADIUS * RADIUS + 4))
+      {
+        int xpos = ball_center.x + x;
+        int ypos = ball_center.y + y;
+        if (0 < xpos && xpos < WIDTH && 0 < ypos && ypos < HEIGHT) {
+          board[xpos][ypos] = FILL;
+        }
+      }
+    }
+  }
+}
 
 void update_canvas(void)
 {
-  for (int i = 0; i < WIDTH; i++)
+  for (int i = 0; i <= WIDTH; i++)
   {
-    for (int j = 0; j < HEIGHT; j++)
+    for (int j = 0; j <= HEIGHT; j++)
     {
-      board[i][j] = '.';
+      board[i][j] = BACKG;
     }
   }
-  board[ball_center.x][ball_center.y] = 'x';
+  draw_ball();
 }
 
 void draw_canvas(void)
@@ -42,7 +63,7 @@ void draw_canvas(void)
   {
     for (int j = 0; j < HEIGHT; j++)
     {
-    printf("%c", board[i][j]);
+      printf("%c", board[i][j]);
     }
     printf("\n");
   }
@@ -50,12 +71,12 @@ void draw_canvas(void)
 
 void step(void)
 {
-  if (ball_center.x >= WIDTH)
+  if (ball_center.x >= WIDTH || ball_center.x <= 0)
   {
     ball_speed.x *= -1;
   }
 
-  if (ball_center.y >= HEIGHT)
+  if (ball_center.y >= HEIGHT || ball_center.y <= 0)
   {
     ball_speed.y *= -1;
   }
@@ -67,22 +88,16 @@ void run(void)
 {
   for (;;)
   {
-  update_canvas();
-  //draw_canvas();
-  printf("\n");
-  printf("x: %i, y: %i", ball_center.x, ball_center.y);
-  step();
-  sleep(1);
+    update_canvas();
+    draw_canvas();
+    step();
+    sleep(1);
+    clear_canvas();
   }
 }
 
-
 int main(void)
 {
-  
   run();
-  // printf("x : %i\n", ball_center.x);
-
-
   return 0;
 }
