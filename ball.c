@@ -1,35 +1,9 @@
-#include <time.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <unistd.h>
-
-#define FILL '@'
-#define WIDTH 32
-#define RADIUS 3
-#define BACKG ' '
-#define HEIGHT 64
-
-static char board[WIDTH][HEIGHT];
-
-typedef struct {
-  int x;
-  int y;
-} vec2;
+#include "ball.h"
 
 static vec2 ball_center = {.x = 16, .y = 8};
 static vec2 ball_speed = {.x = -2, .y = -2};
-
-void delay(int numOfSec)
-{
-  int numOfMilliSec = 1000 * numOfSec;
-  time_t startTime = clock();
-  while(clock() < startTime + numOfMilliSec);
-}
-
-void clear_canvas(void)
-{ 
-  printf("\033[H\033[J");
-}
 
 void draw_ball(void)
 {
